@@ -11,6 +11,8 @@ import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
 import MenuIcon from '@mui/icons-material/Menu';
 import useMediaQuery from '@mui/material/useMediaQuery';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 const theme = createTheme({
   palette: {
@@ -257,6 +259,12 @@ function Cart({ cart, removeFromCart, clearCart, placeOrder, orderStatus, orderL
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
+  // Stripe payment handler (demo)
+  const handleStripePayment = async () => {
+    alert('Stripe payment integration goes here!');
+    // In production, you would call your backend to create a PaymentIntent and use Stripe Elements here.
+  };
+
   return (
     <Box sx={{ px: { xs: 1, md: 3 }, pt: 3 }}>
       <Typography variant="h5" color="primary" gutterBottom sx={{ fontWeight: 800, mb: 3, letterSpacing: 1 }}>Cart</Typography>
@@ -280,6 +288,10 @@ function Cart({ cart, removeFromCart, clearCart, placeOrder, orderStatus, orderL
         {orderLoading ? 'Placing Order...' : 'Place Order'}
       </Fab>
       <Button variant="outlined" color="secondary" onClick={clearCart} sx={{ mt: 2, borderRadius: 8, width: '100%', fontWeight: 700, fontSize: 16, py: 1.2 }} disabled={cart.length === 0}>Clear Cart</Button>
+      {/* Stripe Payment Button */}
+      <Button variant="contained" color="secondary" onClick={handleStripePayment} sx={{ mt: 2, borderRadius: 8, width: '100%', fontWeight: 700, fontSize: 16, py: 1.2 }} disabled={cart.length === 0}>
+        Pay with Card (Stripe)
+      </Button>
       {orderStatus && <Alert severity={orderStatus.includes('success') ? 'success' : 'error'} sx={{ mt: 2 }}>{orderStatus}</Alert>}
     </Box>
   );
@@ -370,50 +382,54 @@ function App() {
     </Box>
   );
 
+  const stripePromise = loadStripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX'); // TODO: Replace with your Stripe publishable key
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AppBar position="static" color="primary" sx={{ mb: 4 }}>
-        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 }, px: { xs: 1, sm: 2 } }}>
-          <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700, fontSize: { xs: 20, sm: 24 } }}>Food Point</Typography>
-          {isMobile ? (
-            <IconButton color="inherit" edge="end" onClick={handleDrawerToggle}>
-              <MenuIcon />
-            </IconButton>
-          ) : (
-            <Box sx={{ display: 'flex', gap: 2 }}>
-              {navLinks.map((link, idx) =>
-                link.action ? (
-                  <Button key={idx} color="inherit" onClick={link.action}>{link.label}</Button>
-                ) : (
-                  <Button key={idx} color="inherit" component={Link} to={link.to}>{link.label}</Button>
-                )
-              )}
-            </Box>
-          )}
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        anchor="right"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }}
-        sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: 220 } }}
-      >
-        {drawer}
-      </Drawer>
-      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/restaurants" element={<Restaurants />} />
-          <Route path="/restaurants/:id" element={<RestaurantDetails addToCart={addToCart} />} />
-          <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} placeOrder={placeOrder} orderStatus={orderStatus} orderLoading={orderLoading} />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
-      </Container>
+      <Elements stripe={stripePromise}>
+        <AppBar position="static" color="primary" sx={{ mb: 4 }}>
+          <Toolbar sx={{ minHeight: { xs: 56, sm: 64 }, px: { xs: 1, sm: 2 } }}>
+            <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700, fontSize: { xs: 20, sm: 24 } }}>Food Point</Typography>
+            {isMobile ? (
+              <IconButton color="inherit" edge="end" onClick={handleDrawerToggle}>
+                <MenuIcon />
+              </IconButton>
+            ) : (
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                {navLinks.map((link, idx) =>
+                  link.action ? (
+                    <Button key={idx} color="inherit" onClick={link.action}>{link.label}</Button>
+                  ) : (
+                    <Button key={idx} color="inherit" component={Link} to={link.to}>{link.label}</Button>
+                  )
+                )}
+              </Box>
+            )}
+          </Toolbar>
+        </AppBar>
+        <Drawer
+          anchor="right"
+          open={mobileOpen}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: 220 } }}
+        >
+          {drawer}
+        </Drawer>
+        <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/restaurants" element={<Restaurants />} />
+            <Route path="/restaurants/:id" element={<RestaurantDetails addToCart={addToCart} />} />
+            <Route path="/cart" element={<Cart cart={cart} removeFromCart={removeFromCart} clearCart={clearCart} placeOrder={placeOrder} orderStatus={orderStatus} orderLoading={orderLoading} />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </Container>
+      </Elements>
     </ThemeProvider>
   );
 }
