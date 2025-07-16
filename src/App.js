@@ -372,20 +372,22 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppBar position="static" color="primary" sx={{ mb: 4 }}>
-        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 }, px: { xs: 1, sm: 2 } }}>
           <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700, fontSize: { xs: 20, sm: 24 } }}>Food Point</Typography>
           {isMobile ? (
             <IconButton color="inherit" edge="end" onClick={handleDrawerToggle}>
               <MenuIcon />
             </IconButton>
           ) : (
-            navLinks.map((link, idx) =>
-              link.action ? (
-                <Button key={idx} color="inherit" onClick={link.action}>{link.label}</Button>
-              ) : (
-                <Button key={idx} color="inherit" component={Link} to={link.to}>{link.label}</Button>
-              )
-            )
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {navLinks.map((link, idx) =>
+                link.action ? (
+                  <Button key={idx} color="inherit" onClick={link.action}>{link.label}</Button>
+                ) : (
+                  <Button key={idx} color="inherit" component={Link} to={link.to}>{link.label}</Button>
+                )
+              )}
+            </Box>
           )}
         </Toolbar>
       </AppBar>
@@ -394,7 +396,7 @@ function App() {
         open={mobileOpen}
         onClose={handleDrawerToggle}
         ModalProps={{ keepMounted: true }}
-        sx={{ display: { xs: 'block', sm: 'none' } }}
+        sx={{ display: { xs: 'block', sm: 'none' }, '& .MuiDrawer-paper': { width: 220 } }}
       >
         {drawer}
       </Drawer>
