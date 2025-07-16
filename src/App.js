@@ -13,6 +13,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import Razorpay from 'react-razorpay';
 
 const theme = createTheme({
   palette: {
@@ -265,6 +266,30 @@ function Cart({ cart, removeFromCart, clearCart, placeOrder, orderStatus, orderL
     // In production, you would call your backend to create a PaymentIntent and use Stripe Elements here.
   };
 
+  // Razorpay payment handler (demo)
+  const handleRazorpayPayment = async () => {
+    const options = {
+      key: 'rzp_test_XXXXXXXXXXXXXXXX', // TODO: Replace with your Razorpay test key
+      amount: total * 100, // amount in paise
+      currency: 'INR',
+      name: 'Food Point',
+      description: 'Order Payment',
+      handler: function (response) {
+        alert('Payment successful! Razorpay Payment ID: ' + response.razorpay_payment_id);
+      },
+      prefill: {
+        name: '',
+        email: '',
+        contact: ''
+      },
+      theme: {
+        color: '#ff9800'
+      }
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
+
   return (
     <Box sx={{ px: { xs: 1, md: 3 }, pt: 3 }}>
       <Typography variant="h5" color="primary" gutterBottom sx={{ fontWeight: 800, mb: 3, letterSpacing: 1 }}>Cart</Typography>
@@ -291,6 +316,10 @@ function Cart({ cart, removeFromCart, clearCart, placeOrder, orderStatus, orderL
       {/* Stripe Payment Button */}
       <Button variant="contained" color="secondary" onClick={handleStripePayment} sx={{ mt: 2, borderRadius: 8, width: '100%', fontWeight: 700, fontSize: 16, py: 1.2 }} disabled={cart.length === 0}>
         Pay with Card (Stripe)
+      </Button>
+      {/* Razorpay Payment Button */}
+      <Button variant="contained" color="primary" onClick={handleRazorpayPayment} sx={{ mt: 2, borderRadius: 8, width: '100%', fontWeight: 700, fontSize: 16, py: 1.2 }} disabled={cart.length === 0}>
+        Pay with Razorpay
       </Button>
       {orderStatus && <Alert severity={orderStatus.includes('success') ? 'success' : 'error'} sx={{ mt: 2 }}>{orderStatus}</Alert>}
     </Box>
