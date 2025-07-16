@@ -118,6 +118,8 @@ function Register() {
             const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
             return field ? `${field}: ${e.msg}` : e.msg;
           }).join(', ');
+        } else if (typeof data.detail === 'object') {
+          errorMsg = data.detail.msg || JSON.stringify(data.detail);
         } else if (typeof data.detail === 'string') {
           errorMsg = data.detail;
         }
