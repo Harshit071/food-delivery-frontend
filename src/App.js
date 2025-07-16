@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Routes, Route, Link, useNavigate, useParams } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button, Container, TextField, Box, Alert, Card, CardContent, CardActions, Grid, List, ListItem, ListItemText, IconButton, ThemeProvider, createTheme, CssBaseline, CardMedia, BottomNavigation, BottomNavigationAction, Paper, Fab } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container, TextField, Box, Alert, Card, CardContent, CardActions, Grid, List, ListItem, ListItemText, IconButton, ThemeProvider, createTheme, CssBaseline, CardMedia, BottomNavigation, BottomNavigationAction, Paper, Fab, Drawer } from '@mui/material';
 import { AuthContext } from './AuthContext';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
@@ -9,6 +9,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import HomeIcon from '@mui/icons-material/Home';
 import LandingPage from './components/LandingPage';
 import Dashboard from './components/Dashboard';
+import MenuIcon from '@mui/icons-material/Menu';
+import useMediaQuery from '@mui/material/useMediaQuery';
 
 const theme = createTheme({
   palette: {
@@ -61,7 +63,7 @@ function Login() {
     e.preventDefault();
     setError(null);
     try {
-      const res = await fetch('http://localhost:8000/token', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
@@ -103,14 +105,23 @@ function Register() {
     setError(null);
     setSuccess(null);
     try {
-      const res = await fetch('http://localhost:8000/register/', {
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password, address }),
       });
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.detail || 'Registration failed');
+        let errorMsg = 'Registration failed';
+        if (Array.isArray(data.detail)) {
+          errorMsg = data.detail.map(e => {
+            const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
+            return field ? `${field}: ${e.msg}` : e.msg;
+          }).join(', ');
+        } else if (typeof data.detail === 'string') {
+          errorMsg = data.detail;
+        }
+        throw new Error(errorMsg);
       }
       setSuccess('Registration successful! You can now log in.');
       setTimeout(() => navigate('/login'), 1500);
@@ -140,7 +151,7 @@ function Restaurants() {
 
   useEffect(() => {
     setLoading(true);
-    fetch('http://localhost:8000/restaurants/')
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/restaurants/`)
       .then(res => {
         if (!res.ok) throw new Error('Load failed');
         return res.json();
@@ -194,8 +205,8 @@ function RestaurantDetails({ addToCart }) {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch(`http://localhost:8000/restaurants/`).then(res => res.json()),
-      fetch(`http://localhost:8000/food_items/`).then(res => res.json())
+      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/restaurants/`).then(res => res.json()),
+      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/food_items/`).then(res => res.json())
     ]).then(([restaurants, foodItems]) => {
       const rest = restaurants.find(r => r.id === parseInt(id));
       setRestaurant(rest);
@@ -284,6 +295,12 @@ function App() {
   const [cart, setCart] = useState([]);
   const [orderStatus, setOrderStatus] = useState(null);
   const [orderLoading, setOrderLoading] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const isMobile = useMediaQuery('(max-width:600px)');
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
 
   const addToCart = (food) => {
     setCart(prev => {
@@ -307,7 +324,7 @@ function App() {
     setOrderStatus(null);
     try {
       for (const item of cart) {
-        const res = await fetch('http://localhost:8000/orders/', {
+        const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/orders/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -326,22 +343,62 @@ function App() {
     }
   };
 
+  const navLinks = [
+    { label: 'Home', to: '/' },
+    { label: 'Restaurants', to: '/restaurants' },
+    { label: 'Cart', to: '/cart' },
+    { label: 'Profile', to: '/profile' },
+    ...(!token ? [
+      { label: 'Login', to: '/login' },
+      { label: 'Register', to: '/register' },
+    ] : [
+      { label: 'Logout', action: logout },
+    ])
+  ];
+
+  const drawer = (
+    <Box sx={{ width: 220, p: 2 }} role="presentation" onClick={handleDrawerToggle}>
+      {navLinks.map((link, idx) =>
+        link.action ? (
+          <Button key={idx} color="inherit" fullWidth sx={{ justifyContent: 'flex-start', mb: 1 }} onClick={link.action}>{link.label}</Button>
+        ) : (
+          <Button key={idx} color="inherit" fullWidth sx={{ justifyContent: 'flex-start', mb: 1 }} component={Link} to={link.to}>{link.label}</Button>
+        )
+      )}
+    </Box>
+  );
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <AppBar position="static" color="primary" sx={{ mb: 4 }}>
-        <Toolbar>
-          <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700 }}>Food Point</Typography>
-          <Button color="inherit" component={Link} to="/">Home</Button>
-          <Button color="inherit" component={Link} to="/restaurants">Restaurants</Button>
-          <Button color="inherit" component={Link} to="/cart">Cart</Button>
-          <Button color="inherit" component={Link} to="/profile">Profile</Button>
-          {!token && <Button color="inherit" component={Link} to="/login">Login</Button>}
-          {!token && <Button color="inherit" component={Link} to="/register">Register</Button>}
-          {token && <Button color="inherit" onClick={logout}>Logout</Button>}
+        <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
+          <Typography variant="h5" sx={{ flexGrow: 1, fontWeight: 700, fontSize: { xs: 20, sm: 24 } }}>Food Point</Typography>
+          {isMobile ? (
+            <IconButton color="inherit" edge="end" onClick={handleDrawerToggle}>
+              <MenuIcon />
+            </IconButton>
+          ) : (
+            navLinks.map((link, idx) =>
+              link.action ? (
+                <Button key={idx} color="inherit" onClick={link.action}>{link.label}</Button>
+              ) : (
+                <Button key={idx} color="inherit" component={Link} to={link.to}>{link.label}</Button>
+              )
+            )
+          )}
         </Toolbar>
       </AppBar>
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Drawer
+        anchor="right"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        ModalProps={{ keepMounted: true }}
+        sx={{ display: { xs: 'block', sm: 'none' } }}
+      >
+        {drawer}
+      </Drawer>
+      <Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 } }}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
