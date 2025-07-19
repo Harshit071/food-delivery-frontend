@@ -116,16 +116,30 @@ function Register() {
       if (!res.ok) {
         const data = await res.json();
         let errorMsg = 'Registration failed';
-        if (Array.isArray(data.detail)) {
-          errorMsg = data.detail.map(e => {
-            const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
-            return field ? `${field}: ${e.msg}` : e.msg;
-          }).join(', ');
-        } else if (typeof data.detail === 'object') {
-          errorMsg = data.detail.msg || JSON.stringify(data.detail);
-        } else if (typeof data.detail === 'string') {
-          errorMsg = data.detail;
+        
+        // Handle all possible error formats
+        if (data.detail) {
+          if (Array.isArray(data.detail)) {
+            errorMsg = data.detail.map(e => {
+              const field = e.loc && e.loc.length > 1 ? e.loc[1] : '';
+              return field ? `${field}: ${e.msg}` : e.msg;
+            }).join(', ');
+          } else if (typeof data.detail === 'object') {
+            errorMsg = data.detail.msg || data.detail.message || JSON.stringify(data.detail);
+          } else if (typeof data.detail === 'string') {
+            errorMsg = data.detail;
+          }
+        } else if (data.message) {
+          errorMsg = data.message;
+        } else if (data.error) {
+          errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+        } else if (data.errors) {
+          errorMsg = Array.isArray(data.errors) ? data.errors.join(', ') : JSON.stringify(data.errors);
+        } else {
+          // Fallback: show the entire response for debugging
+          errorMsg = JSON.stringify(data);
         }
+        
         throw new Error(errorMsg);
       }
       setSuccess('Registration successful! You can now log in.');
