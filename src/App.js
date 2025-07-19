@@ -45,17 +45,7 @@ function Home() {
   const navigate = useNavigate();
   return (
     <Box sx={{ textAlign: 'center', py: 5, px: 2 }}>
-      <img 
-        src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=400&q=80" 
-        alt="Food Delivery" 
-        style={{ 
-          width: '90%', 
-          maxWidth: 340, 
-          borderRadius: 32, 
-          boxShadow: '0 8px 32px #ff980033', 
-          marginBottom: 32 
-        }} 
-      />
+      <img src="https://img.freepik.com/free-vector/food-delivery-concept-illustration_114360-674.jpg?w=740" alt="Food Delivery" style={{ width: '90%', maxWidth: 340, borderRadius: 32, boxShadow: '0 8px 32px #ff980033', marginBottom: 32 }} />
       <Typography variant="h4" color="primary" gutterBottom sx={{ mt: 2, fontWeight: 800 }}>Food Point</Typography>
       <Typography variant="h6" color="text.secondary" sx={{ mb: 5, fontWeight: 400, fontSize: 18 }}>
         Order your favorite food from the best restaurants!
@@ -117,14 +107,22 @@ function Register() {
     e.preventDefault();
     setError(null);
     setSuccess(null);
+    
+    const formData = { name, email, password, address };
+    console.log('Sending registration data:', formData);
+    
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, address }),
+        body: JSON.stringify(formData),
       });
+      
+      console.log('Response status:', res.status);
+      const data = await res.json();
+      console.log('Response data:', data);
+      
       if (!res.ok) {
-        const data = await res.json();
         let errorMsg = 'Registration failed';
         
         // Handle all possible error formats
