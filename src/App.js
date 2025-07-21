@@ -229,6 +229,15 @@ function RestaurantDetails({ addToCart }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Helper to get food image by name
+  const getFoodImage = (name) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('pizza')) return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80';
+    if (lower.includes('dosa')) return 'https://www.cookwithmanali.com/wp-content/uploads/2020/05/Masala-Dosa.jpg';
+    // Add more mappings as needed
+    return 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80'; // default
+  };
+
   useEffect(() => {
     setLoading(true);
     Promise.all([
@@ -258,7 +267,7 @@ function RestaurantDetails({ addToCart }) {
             <Card sx={{ borderRadius: 5, boxShadow: 4, display: 'flex', alignItems: 'center', p: 2, bgcolor: '#fff', minHeight: 120 }}>
               <CardMedia
                 component="img"
-                image={foodImages[idx % foodImages.length]}
+                image={getFoodImage(f.name)}
                 alt={f.name}
                 sx={{ width: 100, height: 100, borderRadius: 4, objectFit: 'cover', mr: 3 }}
               />
