@@ -415,12 +415,15 @@ function App() {
   const placeOrder = async () => {
     setOrderLoading(true);
     setOrderStatus(null);
+    // Always get token from context or localStorage
+    const authToken = token || localStorage.getItem('token');
+    console.log('Using token for order:', authToken);
     try {
       const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/orders/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({
           items: cart.map(item => ({ food_item_id: item.id, quantity: item.quantity })),
