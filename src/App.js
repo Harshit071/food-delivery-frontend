@@ -416,21 +416,25 @@ function App() {
     setOrderLoading(true);
     setOrderStatus(null);
     try {
-      for (const item of cart) {
-        const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/orders/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ food_item_id: item.id, quantity: item.quantity })
-        });
-        if (!res.ok) throw new Error('Order failed');
+      const res = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/orders/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          items: cart.map(item => ({ food_item_id: item.id, quantity: item.quantity })),
+          delivery_address: 'User address here' // TODO: Replace with actual user address if available
+        })
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || 'Order failed');
       }
       setOrderStatus('Order placed successfully!');
       clearCart();
     } catch (err) {
-      setOrderStatus('Order failed.');
+      setOrderStatus(err.message || 'Order failed.');
     } finally {
       setOrderLoading(false);
     }
