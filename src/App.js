@@ -45,7 +45,7 @@ function Home() {
   const navigate = useNavigate();
   return (
     <Box sx={{ textAlign: 'center', py: 5, px: 2 }}>
-      <img src="https://img.freepik.com/free-vector/food-delivery-concept-illustration_114360-674.jpg?w=740" alt="Food Delivery" style={{ width: '90%', maxWidth: 340, borderRadius: 32, boxShadow: '0 8px 32px #ff980033', marginBottom: 32 }} />
+      <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?auto=format&fit=crop&w=600&q=80" alt="Food Delivery" style={{ width: '90%', maxWidth: 340, borderRadius: 32, boxShadow: '0 8px 32px #ff980033', marginBottom: 32 }} />
       <Typography variant="h4" color="primary" gutterBottom sx={{ mt: 2, fontWeight: 800 }}>Food Point</Typography>
       <Typography variant="h6" color="text.secondary" sx={{ mb: 5, fontWeight: 400, fontSize: 18 }}>
         Order your favorite food from the best restaurants!
