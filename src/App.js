@@ -234,6 +234,9 @@ function RestaurantDetails({ addToCart }) {
     const lower = name.toLowerCase();
     if (lower.includes('pizza')) return 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=400&q=80';
     if (lower.includes('dosa')) return 'https://www.cookwithmanali.com/wp-content/uploads/2020/05/Masala-Dosa.jpg';
+    if (lower.includes('pasta')) return 'https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=400&q=80';
+    if (lower.includes('burger')) return 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=400&q=80';
+    if (lower.includes('sandwich')) return 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80';
     // Add more mappings as needed
     return 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80'; // default
   };
